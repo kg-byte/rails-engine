@@ -22,6 +22,7 @@ class Api::V1::ItemsController < ApplicationController
   def destroy 
     render json: Item.delete(params[:id])
   end
+  
 private
   def item_params
     params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
