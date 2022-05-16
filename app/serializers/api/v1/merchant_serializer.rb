@@ -1,5 +1,4 @@
 class Api::V1::MerchantSerializer
   include JSONAPI::Serializer 
-  attributes :id, :name 
-  has_many :items
+  attributes :id, :name, :created_at, :updated_at
 end
