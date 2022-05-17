@@ -23,10 +23,9 @@ describe "Merchants API" do
   it "sends a specific merchants" do
     merchant = create(:merchant)
     get "/api/v1/merchants/#{merchant.id}"
-    expect(response).to be_successful
-
     merchant = JSON.parse(response.body, symbolize_names: true)[:data]
 
+    expect(response).to be_successful
     expect(merchant).to have_key(:id)
     expect(merchant[:id]).to be_a(String)
 
@@ -40,12 +39,10 @@ describe "Merchants API" do
   it 'sends all items belonging to a merchant' do 
     merchant = create(:merchant)
     items = create_list(:item,3, merchant_id: merchant.id)
-
     get "/api/v1/merchants/#{merchant.id}/items"
-
-    expect(response).to be_successful
     items = JSON.parse(response.body, symbolize_names: true)[:data]
 
+    expect(response).to be_successful
     expect(items.count).to eq(3)
     items.each do |item|
       expect(item).to have_key(:id)
@@ -67,5 +64,78 @@ describe "Merchants API" do
       expect(item[:attributes]).to have_key(:merchant_id)
       expect(item[:attributes][:merchant_id]).to be_a(Integer)
     end
+  end
+
+  it 'finds and sends first merchant(alphabetical) by partial match' do 
+    merchant1 = Merchant.create(name: 'Gold Ring Op')
+    merchant2 = Merchant.create(name: 'Turing')
+    merchant2 = Merchant.create(name: 'Platinum Ring')
+
+    get "/api/v1/merchants/find?name=ring"
+    merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(merchant_found[:attributes][:name]).to eq('Gold Ring Op')
+  end
+
+  it 'returns error when no merchant(alphabetical)(find) by partial match' do 
+    merchant1 = Merchant.create(name: 'Gold Ring Op')
+    merchant2 = Merchant.create(name: 'Turing')
+    merchant2 = Merchant.create(name: 'Platinum Ring')
+
+    get "/api/v1/merchants/find?name=ringgg"
+    merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(merchant_found[:error]).to eq('Merchant not found')
+  end
+
+  it 'finds and sends all merchant by partial match' do 
+    merchant1 = Merchant.create(name: 'Gold Ring Op')
+    merchant2 = Merchant.create(name: 'Turing')
+    merchant2 = Merchant.create(name: 'Platinum Ring')
+
+    get "/api/v1/merchants/find_all?name=ring"
+    merchants_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(merchants_found.count).to eq(3)
+    expect(merchants_found[0][:attributes][:name]).to eq('Gold Ring Op')
+  end
+
+
+  it 'returns empty array when no merchant(alphabetical)(find_all) by partial match' do 
+    merchant1 = Merchant.create(name: 'Gold Ring Op')
+    merchant2 = Merchant.create(name: 'Turing')
+    merchant2 = Merchant.create(name: 'Platinum Ring')
+
+    get "/api/v1/merchants/find_all?name=ringgg"
+    merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(merchant_found).to eq([])
+  end
+
+  it 'handles edge case with no params when finding one merchant' do 
+    merchant1 = Merchant.create(name: 'Gold Ring Op')
+    merchant2 = Merchant.create(name: 'Turing')
+    merchant2 = Merchant.create(name: 'Platinum Ring')
+    get "/api/v1/merchants/find"
+    merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(response.status).to eq(400)
+    expect(merchant_found[:error]).to eq('Parameter cannot be missing')
+  end
+
+  it 'handles edge case with empty params when finding one merchant' do 
+    merchant1 = Merchant.create(name: 'Gold Ring Op')
+    merchant2 = Merchant.create(name: 'Turing')
+    merchant2 = Merchant.create(name: 'Platinum Ring')
+    get "/api/v1/merchants/find?name="
+
+    merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response.status).to eq(400)
+    expect(merchant_found[:error]).to eq('Parameter cannot be empty')
+  
   end
 end
