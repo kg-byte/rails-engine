@@ -24,9 +24,9 @@ class Api::V1::SearchItemsController < ApplicationController
 
     if params[:name] && params[:name] != ''
       item = Item.where("lower(name) like ?", "%#{params[:name].downcase}%").order(:name).first
-    elsif params[:min_price] && params[:min_price] != ''
+    elsif params[:min_price] && params[:min_price] != '' && !params[:max_price]
       item = Item.where("unit_price > #{params[:min_price].to_i}").order(:unit_price).first
-    elsif params[:max_price] && params[:max_price] != ''
+    elsif params[:max_price] && params[:max_price] != '' && !params[:min_price]
       item = Item.where("unit_price < #{params[:max_price].to_i}").order(unit_price: :desc).first
     elsif params[:max_price] && params[:min_price] && params[:max_price] > params[:min_price]
       item = Item.where(" #{params[:min_price].to_i}<unit_price < #{params[:max_price].to_i}").first
