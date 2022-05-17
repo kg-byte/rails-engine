@@ -197,7 +197,46 @@ describe "Items API" do
     expect(response).to be_successful
 
     expect(item_found[:error]).to eq('Item not found')
-    end
+  end
+
+  it 'finds and sends first item(alphabetical) by min price search' do 
+    create(:item, name: 'Gold Ring Op', unit_price: '20')
+    create(:item, name: 'Turing',  unit_price: '50')
+    create(:item, name: 'Platinum Ring', unit_price: '50')
+
+    get "/api/v1/items/find?min_price=40"
+    item_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(item_found[:attributes][:name]).to eq('Platinum Ring')
+  end
+
+  it 'finds and sends first item(alphabetical) by max price search' do 
+    create(:item, name: 'Turing',  unit_price: '20')
+    create(:item, name: 'Gold Ring Op', unit_price: '20')
+    create(:item, name: 'Platinum Ring', unit_price: '50')
+
+    get "/api/v1/items/find?max_price=40"
+    item_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(item_found[:attributes][:name]).to eq('Gold Ring Op')
+  end
+
+  it 'finds and sends first item(alphabetical) by max and min price search' do 
+    create(:item, name: 'Turing',  unit_price: '30')
+    create(:item, name: 'Gold Ring Op', unit_price: '80')
+    create(:item, name: 'Platinum Ring', unit_price: '20')
+
+    get "/api/v1/items/find?max_price=40&min_price=10"
+    item_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(item_found[:attributes][:name]).to eq('Platinum Ring')
+  end
+
+end
+
   describe 'edge cases' do 
     it 'handles edge case with no params when finding one item' do 
       get "/api/v1/items/find"
@@ -232,5 +271,13 @@ describe "Items API" do
       expect(response.status).to eq(400)
       expect(item_found[:error]).to eq('Parameter cannot be empty')
     end
+
+    it 'handles edge case when max_price is less than min price' do 
+
+      get "/api/v1/items/find?max_price=50&min_price=100"
+
+      item_found = JSON.parse(response.body, symbolize_names: true)[:data]
+      expect(response.status).to eq(400)
+      expect(item_found[:error]).to eq('max_price cannot be less than min_price')
   end
 end

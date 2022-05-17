@@ -29,7 +29,7 @@ class Api::V1::SearchItemsController < ApplicationController
     elsif params[:max_price] && params[:max_price] != '' && !params[:min_price]
       item = Item.where("unit_price < #{params[:max_price].to_i}").order(:name).first
     elsif params[:max_price] && params[:min_price] && params[:max_price] > params[:min_price]
-      item = Item.where(" #{params[:min_price].to_i}<unit_price < #{params[:max_price].to_i}").first
+      item = Item.where(unit_price: params[:min_price].to_i..params[:max_price].to_i).order(:name).first
     end
 
     if item 
