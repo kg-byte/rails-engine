@@ -147,4 +147,90 @@ describe "Items API" do
     expect(merchant[:attributes]).to have_key(:name)
     expect(merchant[:attributes][:name]).to be_a(String)
   end
+
+  it 'finds all items by partial match' do 
+    create(:item, name: 'Gold Ring Op')
+    create(:item, name: 'Turing')
+    create(:item, name: 'Platinum Ring')
+
+    get "/api/v1/items/find_all?name=ring"
+
+    items_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(items_found.count).to eq(3)
+    expect(items_found[0][:attributes][:name]).to eq('Gold Ring Op')
+  end
+
+
+  it 'returns empty array when no merchant(alphabetical)(find_all) by partial match' do 
+    create(:item, name: 'Gold Ring Op')
+    create(:item, name: 'Turing')
+    create(:item, name: 'Platinum Ring')
+
+    get "/api/v1/items/find_all?name=ringggg"
+
+    items_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful    
+    expect(items_found).to eq([])
+  end
+
+  it 'finds and sends first item(alphabetical) by partial name match' do 
+    create(:item, name: 'Gold Ring Op')
+    create(:item, name: 'Turing')
+    create(:item, name: 'Platinum Ring')
+
+    get "/api/v1/items/find?name=ring"
+    item_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(item_found[:attributes][:name]).to eq('Gold Ring Op')
+  end
+
+  it 'returns error when no item(alphabetical)(find) by partial name match' do 
+    create(:item, name: 'Gold Ring Op')
+    create(:item, name: 'Turing')
+    create(:item, name: 'Platinum Ring')
+
+    get "/api/v1/items/find?name=ringgg"
+    item_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(item_found[:error]).to eq('Item not found')
+    end
+  describe 'edge cases' do 
+    it 'handles edge case with no params when finding one item' do 
+      get "/api/v1/items/find"
+      item_found = JSON.parse(response.body, symbolize_names: true)[:data]
+
+      expect(response.status).to eq(400)
+      expect(item_found[:error]).to eq('Parameter cannot be missing')
+    end
+
+    it 'handles edge case with empty params when finding one merchant' do 
+    
+      get "/api/v1/items/find?name="
+
+      item_found = JSON.parse(response.body, symbolize_names: true)[:data]
+      expect(response.status).to eq(400)
+      expect(item_found[:error]).to eq('Parameter cannot be empty')
+    end
+    it 'handles edge case with no params when finding items' do 
+
+      get "/api/v1/items/find_all"
+      item_found = JSON.parse(response.body, symbolize_names: true)[:data]
+
+      expect(response.status).to eq(400)
+      expect(item_found[:error]).to eq('Parameter cannot be missing')
+    end
+
+    it 'handles edge case with empty params when finding items' do 
+
+      get "/api/v1/items/find_all?name="
+
+      item_found = JSON.parse(response.body, symbolize_names: true)[:data]
+      expect(response.status).to eq(400)
+      expect(item_found[:error]).to eq('Parameter cannot be empty')
+    end
+  end
 end
