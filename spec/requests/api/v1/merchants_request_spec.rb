@@ -116,26 +116,36 @@ describe "Merchants API" do
     expect(merchant_found).to eq([])
   end
 
-  it 'handles edge case with no params when finding one merchant' do 
-    merchant1 = Merchant.create(name: 'Gold Ring Op')
-    merchant2 = Merchant.create(name: 'Turing')
-    merchant2 = Merchant.create(name: 'Platinum Ring')
-    get "/api/v1/merchants/find"
-    merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
+  describe 'edge cases' do 
+    it 'handles edge case with no params when finding one merchant' do 
+      get "/api/v1/merchants/find"
+      merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
 
-    expect(response.status).to eq(400)
-    expect(merchant_found[:error]).to eq('Parameter cannot be missing')
-  end
+      expect(response.status).to eq(400)
+      expect(merchant_found[:error]).to eq('Parameter cannot be missing')
+    end
 
-  it 'handles edge case with empty params when finding one merchant' do 
-    merchant1 = Merchant.create(name: 'Gold Ring Op')
-    merchant2 = Merchant.create(name: 'Turing')
-    merchant2 = Merchant.create(name: 'Platinum Ring')
-    get "/api/v1/merchants/find?name="
+    it 'handles edge case with empty params when finding one merchant' do 
+      get "/api/v1/merchants/find?name="
 
-    merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
-    expect(response.status).to eq(400)
-    expect(merchant_found[:error]).to eq('Parameter cannot be empty')
-  
+      merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
+      expect(response.status).to eq(400)
+      expect(merchant_found[:error]).to eq('Parameter cannot be empty')
+    end
+    it 'handles edge case with no params when finding merchants' do 
+      get "/api/v1/merchants/find_all"
+      merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
+
+      expect(response.status).to eq(400)
+      expect(merchant_found[:error]).to eq('Parameter cannot be missing')
+    end
+
+    it 'handles edge case with empty params when finding merchants' do 
+      get "/api/v1/merchants/find_all?name="
+
+      merchant_found = JSON.parse(response.body, symbolize_names: true)[:data]
+      expect(response.status).to eq(400)
+      expect(merchant_found[:error]).to eq('Parameter cannot be empty')
+    end
   end
 end
