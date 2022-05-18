@@ -8,4 +8,8 @@ class Merchant < ApplicationRecord
   def self.search_one_by_name(name)
     search_all_by_name(name).order(:name).first
   end
+
+  def self.id_exist?(id)
+    pluck(:id).include?(id)
+  end
 end
