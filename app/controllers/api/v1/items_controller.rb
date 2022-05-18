@@ -1,8 +1,6 @@
 class Api::V1::ItemsController < ApplicationController
   def index
-    params[:page] = 1 unless params[:page]
-    params[:per_page] = 20 unless params[:per_page]
-    items = Item.all.paginate(page: params[:page], per_page: params[:per_page])
+    items = Item.all.paginate(page: page_num, per_page: num_per_page)
     render json: Api::V1::ItemSerializer.new(items)
   end
 
@@ -29,5 +27,13 @@ class Api::V1::ItemsController < ApplicationController
 private
   def item_params
     params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
+  end
+
+  def page_num
+    params[:page]? params[:page] : 1
+  end
+
+  def num_per_page
+    params[:per_page]? params[:per_page] : 20
   end
 end
