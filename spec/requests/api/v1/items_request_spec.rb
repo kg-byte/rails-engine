@@ -69,6 +69,7 @@ describe "Items API" do
 
       expect(item[:attributes]).to have_key(:merchant_id)
       expect(item[:attributes][:merchant_id]).to be_a(Integer)
+      expect(item[:attributes][:merchant_id]).to eq(merchant2.id)
     end
   end
 
