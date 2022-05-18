@@ -16,11 +16,13 @@ class Api::V1::ItemsController < ApplicationController
     if valid_merchant_id
       render json: Api::V1::ItemSerializer.new(Item.update(params[:id], item_params))
     else 
-      render :status => 404
+      render status: 404
     end
   end
 
   def destroy 
+    item = Item.find(params[:id])
+    item.destroy_single_invoices
     render json: Item.delete(params[:id])
   end
   
