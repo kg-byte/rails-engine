@@ -1,39 +1,103 @@
 class Api::V1::SearchItemsController < ApplicationController
   def index
-    if params[:name] && params[:name] != ''
-      items = Item.where("lower(name) like ?", "%#{params[:name].downcase}%")
-	    render json: Api::V1::ItemSerializer.new(items) 
+    if edge_cases_conditions
+      edge_case_resposne
+    else
+	    render json: Api::V1::ItemSerializer.new(search_items)
     end
-    render json: {data: {error: 'Parameter cannot be missing'}}, status: 400 if item_params == {}
-    render json: {data: {error: 'Parameter cannot be empty'}}, status: 400 if item_params.values.first ==''
   end
 
   def show
-    return render json: {error: 'max_price cannot be negative'}, status:400 if item_params[:max_price].to_i < 0
-    return render json: {error: 'min_price cannot be negative'}, status:400 if item_params[:min_price].to_i < 0
-    return render json: {data: {error: 'Parameter cannot be missing'}}, status: 400 if item_params == {}
-    return render json: {data: {error: 'Parameter cannot be empty'}}, status: 400 if item_params.values.first ==''
-    return render json: {data: {error: 'Cannot send both name and max_price'}}, status: 400 if item_params[:name] && item_params[:max_price]
-    return render json: {data: {error: 'Cannot send both name and max_price and min_price'}}, status: 400 if item_params[:name] && item_params[:min_price] && item_params[:max_price]
-    return render json: {data: {error: 'Cannot send both name and min_price'}}, status: 400 if item_params[:name] && item_params[:min_price]
-    return render json: {data: {error: 'max_price cannot be less than min_price'}}, status: 400 if params[:max_price] && params[:min_price] && item_params[:max_price].to_i < item_params[:min_price].to_i
-    
-    if params[:name] && params[:name] != ''
-      item = Item.where("lower(name) like ?", "%#{params[:name].downcase}%").order(:name).first
-    elsif params[:min_price] && params[:min_price] != '' && !params[:max_price]
-      item = Item.where("unit_price > #{params[:min_price].to_i}").order(:name).first
-    elsif params[:max_price] && params[:max_price] != '' && !params[:min_price]
-      item = Item.where("unit_price < #{params[:max_price].to_i}").order(:name).first
-    elsif params[:max_price] && params[:min_price] && params[:max_price] > params[:min_price]
-      item = Item.where(unit_price: params[:min_price].to_i..params[:max_price].to_i).order(:name).first
+    if edge_cases_conditions
+      edge_case_resposne
+    else
+      render json: Api::V1::ItemSerializer.new(search_one_item), status: :ok if search_one_item
+      render json: {data: {error: 'Item not found'}} if !search_one_item
     end
-
-    return render json: Api::V1::ItemSerializer.new(item), status: :ok if item
-    return render json: {data: {error: 'Item not found'}} if !item
   end
 
   private
     def item_params
       params.permit(:name, :max_price, :min_price)
+    end
+
+    def edge_cases_conditions
+      negative_max || negative_min || no_params || empty_params || name_and_price || max_less_than_min
+    end
+
+    def edge_case_resposne
+      return render json: Api::V1::ErrorSerializer.val_error(error_messages[:max_val]), status:400 if negative_max 
+      return render json: Api::V1::ErrorSerializer.val_error(error_messages[:min_val]), status:400 if negative_min 
+      return render json: Api::V1::ErrorSerializer.format_error(error_messages[:missing_param]), status: 400 if no_params 
+      return render json: Api::V1::ErrorSerializer.format_error(error_messages[:empty_param]), status: 400 if empty_params 
+      return render json: Api::V1::ErrorSerializer.format_error(error_messages[:name_price]), status: 400 if name_and_price
+      return render json: Api::V1::ErrorSerializer.format_error(error_messages[:max_less_than_min]), status: 400 if max_less_than_min 
+    end
+
+    def search_one_item
+      return Item.search_one_by_name(params[:name]) if search_name
+      return Item.search_one_by_min(params[:min_price]) if search_min
+      return Item.search_one_by_max(params[:max_price]) if search_max
+      return Item.search_one_by_max_min(params[:min_price], params[:max_price]) if search_max_min
+    end
+
+    def search_items
+      return Item.search_all_by_name(params[:name]) if search_name
+      return Item.search_all_by_min(params[:min_price]) if search_min
+      return Item.search_all_by_max(params[:max_price]) if search_max
+      return Item.search_all_by_max_min(params[:min_price], params[:max_price]) if search_max_min
+    end
+
+    def search_name 
+      params[:name] && params[:name] != ''
+    end
+
+    def search_max 
+      params[:max_price] && params[:max_price] != '' && !params[:min_price]
+    end
+
+    def search_min
+      params[:min_price] && params[:min_price] != '' && !params[:max_price]
+    end
+
+    def search_max_min
+      params[:max_price] && params[:min_price] && params[:max_price] > params[:min_price]
+    end
+
+    def negative_max
+      item_params[:max_price].to_i < 0
+    end
+
+    def negative_min 
+      item_params[:min_price].to_i < 0
+    end
+
+    def no_params
+       item_params == {}
+    end
+
+    def empty_params
+      item_params.values.first ==''
+    end
+
+    def name_and_price
+      item_params[:name] && item_params[:max_price] || 
+      item_params[:name] && item_params[:min_price] ||
+      item_params[:name] && item_params[:min_price] && item_params[:name]
+    end
+
+    def max_less_than_min
+      params[:max_price] && params[:min_price] && item_params[:max_price].to_i < item_params[:min_price].to_i
+    end
+
+    def error_messages
+      messages = Hash.new 
+      messages[:max_val]='max_price cannot be negative'
+      messages[:min_val]='min_price cannot be negative'
+      messages[:missing_param]='Parameter cannot be missing'
+      messages[:empty_param] = 'Parameter cannot be empty'
+      messages[:name_price]='Cannot send both name and price'
+      messages[:max_less_than_min]='max_price cannot be less than min_price'
+      messages
     end
 end

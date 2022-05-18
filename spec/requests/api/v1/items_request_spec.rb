@@ -148,7 +148,7 @@ describe "Items API" do
     expect(merchant[:attributes][:name]).to be_a(String)
   end
 
-  it 'finds all items by partial match' do 
+  it 'finds all items by partial name match' do 
     create(:item, name: 'Gold Ring Op')
     create(:item, name: 'Turing')
     create(:item, name: 'Platinum Ring')
@@ -162,6 +162,47 @@ describe "Items API" do
     expect(items_found[0][:attributes][:name]).to eq('Gold Ring Op')
   end
 
+  it 'finds all items by min_price search' do 
+    create(:item, name: 'Turing',  unit_price: '30')
+    create(:item, name: 'Gold Ring Op', unit_price: '80')
+    create(:item, name: 'Platinum Ring', unit_price: '20')
+
+    get "/api/v1/items/find_all?min_price=25"
+
+    items_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(items_found.count).to eq(2)
+    expect(items_found[1][:attributes][:name]).to eq('Gold Ring Op')
+  end
+
+  it 'finds all items by min_price search' do 
+    create(:item, name: 'Turing',  unit_price: '30')
+    create(:item, name: 'Gold Ring Op', unit_price: '80')
+    create(:item, name: 'Platinum Ring', unit_price: '20')
+
+    get "/api/v1/items/find_all?max_price=50"
+
+    items_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(items_found.count).to eq(2)
+    expect(items_found[0][:attributes][:name]).to eq('Turing')
+  end
+
+  it 'finds all items by min and max_price search' do 
+    create(:item, name: 'Turing',  unit_price: '30')
+    create(:item, name: 'Gold Ring Op', unit_price: '80')
+    create(:item, name: 'Platinum Ring', unit_price: '20')
+
+    get "/api/v1/items/find_all?min_price=10&max_price=50"
+
+    items_found = JSON.parse(response.body, symbolize_names: true)[:data]
+    expect(response).to be_successful
+
+    expect(items_found.count).to eq(2)
+    expect(items_found[0][:attributes][:name]).to eq('Turing')
+  end
 
   it 'returns empty array when no merchant(alphabetical)(find_all) by partial match' do 
     create(:item, name: 'Gold Ring Op')
@@ -280,4 +321,12 @@ end
       expect(response.status).to eq(400)
       expect(item_found[:error]).to eq('max_price cannot be less than min_price')
   end
+
+    it 'handles edge case where max_price cannot be negative' do 
+      get "/api/v1/items/find?max_price=-50"
+      item_found = JSON.parse(response.body, symbolize_names: true)
+      expect(response.status).to eq(400)
+      expect(item_found[:error]).to eq('max_price cannot be negative')
+
+    end
 end
