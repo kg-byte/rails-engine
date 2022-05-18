@@ -13,7 +13,7 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def update 
-    if Merchant.pluck(:id).include?(params[:merchant_id]) || !item_params[:merchant_id]
+    if valid_merchant_id
       render json: Api::V1::ItemSerializer.new(Item.update(params[:id], item_params))
     else 
       render :status => 404
@@ -35,5 +35,9 @@ private
 
   def num_per_page
     params[:per_page]? params[:per_page] : 20
+  end
+
+  def valid_merchant_id
+    Merchant.id_exist?(params[:merchant_id]) || !item_params[:merchant_id]
   end
 end
