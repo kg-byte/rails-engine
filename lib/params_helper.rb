@@ -16,14 +16,6 @@ module ParamsHelper
     params[:per_page]? params[:per_page] : 20
   end
 
-  def merchant_no_params
-	  !params[:name]
-  end
-
-  def merchant_empty_params
-     params[:name] ==''
-  end
-
   def item_search_params
     params.permit(:name, :max_price, :min_price)
   end
