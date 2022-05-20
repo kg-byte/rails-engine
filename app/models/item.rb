@@ -22,7 +22,8 @@ class Item < ApplicationRecord
   end
 
   def destroy_single_invoices
-    invoices.map {|invoice| invoice.destroy if invoice.items.count==1}
+    single_invoices = Invoice.joins(:items).group(:id).having("count(item_id) = 1")
+    Invoice.where(id: single_invoices.pluck(:id)).destroy_all
   end
 
 private
