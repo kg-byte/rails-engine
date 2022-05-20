@@ -18,16 +18,12 @@ class Api::V2::SearchItemsController < ApplicationController
   private
     def search_one_item
       return Item.search_one_by_name(params[:name]) if search_name
-      return Item.search_one_by_min(params[:min_price]) if search_min
-      return Item.search_one_by_max(params[:max_price]) if search_max
-      return Item.search_one_by_max_min(params[:min_price], params[:max_price]) if search_max_min
+      return Item.search_one_by_max_min(params[:min_price], params[:max_price]) if search_price
     end
 
     def search_items
       return Item.search_all_by_name(params[:name]) if search_name
-      return Item.search_all_by_min(params[:min_price]) if search_min
-      return Item.search_all_by_max(params[:max_price]) if search_max
-      return Item.search_all_by_max_min(params[:min_price], params[:max_price]) if search_max_min
+      return Item.search_all_by_max_min(params[:min_price], params[:max_price]) if search_price
     end
 
 end
