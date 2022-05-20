@@ -14,7 +14,7 @@ RSpec.describe Item, type: :model do
   end
 
   it 'search one by min price' do 
-    expect(Item.search_one_by_max_min('10')).to eq(item1)
+    expect(Item.search_one_by_max_min('10',nil)).to eq(item1)
   end
 
   it 'search one by max and min price' do 
