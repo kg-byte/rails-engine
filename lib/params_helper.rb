@@ -32,6 +32,10 @@ module ParamsHelper
     params[:max_price] && params[:min_price] && params[:max_price] > params[:min_price]
   end
 
+  def search_price
+    search_max || search_min || search_max_min
+  end
+
   def negative_max
     item_search_params[:max_price].to_i < 0
   end
@@ -45,7 +49,7 @@ module ParamsHelper
   end
 
   def empty_params
-    item_search_params.values.first ==''
+    item_search_params.values.include?('')
   end
 
   def name_and_price
