@@ -7,7 +7,7 @@ class Api::V1::ErrorSerializer
 
 
   def self.val_error(message)
-    { error: message }
+    format_error(message)[:data]
   end
 
 end
