@@ -10,15 +10,15 @@ RSpec.describe Item, type: :model do
   end
 
   it 'search one by max price' do 
-    expect(Item.search_one_by_max_min(nil,'60')).to eq(item1)
+    expect(Item.search_one_by_max_min(max_price:'60')).to eq(item1)
   end
 
   it 'search one by min price' do 
-    expect(Item.search_one_by_max_min('10',nil)).to eq(item1)
+    expect(Item.search_one_by_max_min(min_price:'10')).to eq(item1)
   end
 
   it 'search one by max and min price' do 
-    expect(Item.search_one_by_max_min('20', '60')).to eq(item1)
+    expect(Item.search_one_by_max_min(min_price:'20', max_price:'60')).to eq(item1)
   end
 
   it 'search all by name' do 
@@ -26,15 +26,15 @@ RSpec.describe Item, type: :model do
   end
 
   it 'search all by max price' do 
-    expect(Item.search_all_by_max_min(nil,'40')).to eq([item2, item3])
+    expect(Item.search_all_by_max_min(max_price:'40')).to eq([item2, item3])
   end
 
   it 'search all by min price' do 
-    expect(Item.search_all_by_max_min('10', nil)).to eq([item1, item2, item3])
+    expect(Item.search_all_by_max_min(min_price:'10')).to eq([item1, item2, item3])
   end
 
   it 'search all by max and min' do 
-    expect(Item.search_all_by_max_min('10', '40')).to eq([item2, item3])
+    expect(Item.search_all_by_max_min(min_price: '10', max_price:'40')).to eq([item2, item3])
 
   end
   it 'destroys invoices with only this item' do 

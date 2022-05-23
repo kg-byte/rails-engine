@@ -7,18 +7,19 @@ class Item < ApplicationRecord
     search_all_by_name(name).order(:name).first
   end
 
-  def self.search_one_by_max_min(min_price, max_price)
-   search_all_by_max_min(min_price, max_price).order(:name).first
+  def self.search_one_by_max_min(min_price: "0", max_price: Float::MAX)
+   search_all_by_max_min(min_price: min_price, max_price: max_price).order(:name).first
   end
 
   def self.search_all_by_name(name)
     where("lower(name) like ?", "%#{name.downcase}%")
   end
 
-  def self.search_all_by_max_min(min_price, max_price)
-    min_price = 0 unless min_price 
-    max_price = max_num unless max_price
-    where(unit_price: min_price.to_i..max_price.to_i)
+  def self.search_all_by_max_min(min_price:"0", max_price:Float::MAX)
+    min_price = '0' unless min_price
+    max_price = Float::MAX unless max_price
+    return where(unit_price: min_price.to_i..max_price.to_i) if max_price.class == String 
+    return where(unit_price: min_price.to_i..max_price) if max_price.class != String
   end
 
   def destroy_single_invoices
@@ -26,9 +27,6 @@ class Item < ApplicationRecord
     Invoice.where(id: single_invoices.pluck(:id)).destroy_all
   end
 
-private
-  def self.max_num
-    (2**(0.size * 8 -2) -1)
-  end
+
 end
   
