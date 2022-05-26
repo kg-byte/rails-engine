@@ -2,7 +2,7 @@
 <!-- ABOUT THE PROJECT -->
 # Rails Engine
 ## About This Project
-*Rails Engine* is a service-oriented E-Commerce Application that powers that exposes API endpoints for front-end consumption.
+*Rails Engine* is a service-oriented E-Commerce Application that powers that exposes API endpoints for front-end [Rails Engine FE](https://github.com/kg-byte/rails_engine_fe) consumption.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
