@@ -4,6 +4,10 @@ module ParamsHelper
     params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
   end
 
+  def merchant_params
+    params.permit(:name)
+  end
+
   def search_name
     params[:name] && params[:name] != ''
   end
@@ -45,11 +49,11 @@ module ParamsHelper
   end
 
   def no_params
-     item_search_params == {}
+     item_search_params == {} 
   end
 
   def empty_params
-    item_search_params.values.include?('')
+    params.values.include?('')
   end
 
   def name_and_price

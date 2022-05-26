@@ -167,4 +167,20 @@ describe "Merchants API" do
       expect(merchant_found[:error]).to eq('Parameter cannot be empty')
     end
   end
+
+  # describe 'Advanced ActiveRecord' do 
+  #   it 'returns top merchants with largest revenue generated' do 
+  #     get "/api/v1/revenue/merchants?quantity=2"
+      
+  #     top_merchants = JSON.parse(response.body, symbolize_names:true)[:data]
+  #     expect(top_merchants.count).to eq(2)
+  #     expect(merchants_found[0][:attributes][:name]).to eq('Gold Ring Op')
+
+
+  #   end
+
+
+
+
+  # end
 end
