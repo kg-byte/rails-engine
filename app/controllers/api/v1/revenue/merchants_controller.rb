@@ -1,7 +1,7 @@
 class Api::V1::Revenue::MerchantsController < ApplicationController
   include ParamsHelper
   def index
-    render json: Api::V1::RevenueMerchantSerializer.new(top_merchants(params[:quantity].to_i))
+    render json: RevenueMerchantSerializer.new(top_merchants(params[:quantity].to_i))
   end
 
 private
